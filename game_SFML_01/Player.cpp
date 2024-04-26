@@ -1,3 +1,5 @@
+#include <utility>
+#include <iostream>
 #include "Player.h"
 #include "constants.h"
 
@@ -19,23 +21,57 @@ void Player::init(sf::Vector2f position, std::string texture_file)
 	this->position = position;
 }
 
-void Player::update(std::vector<Player>& players, float delta_time)
+void Player::update(std::vector<Player>& players, const std::vector<Bound_box>& map_bounds, float delta_time)
 {
 	for (auto& p : players)
 	{
-		p.accel.y = p.on_ground ? 0.f : gravity_acc;
+		p.accel.y = gravity_acc;
 		p.accel.x = 0.0f; // for now we are setting horizontal speed directly by "<-", "->" arrow key_shortcuts
 		p.speed += p.accel * delta_time; // add gravity as offset to acceleration
-		if (p.on_ground && p.speed.y < 0.f)
+
+		auto delta = p.speed * delta_time;
+		auto old_pos = p.position;
+		auto new_pos = p.position + delta;
+		p.on_ground = false;
+
+		// check boudaries
+		for (auto& b : map_bounds)
 		{
-			p.speed.y = 0.0f;
+			if (b.inside(new_pos))
+			{
+				// collision, check in which coordinate
+				bool xc = b.inside({ new_pos.x, old_pos.y });
+				bool yc = b.inside({ old_pos.x, new_pos.y });
+				// decide what to do
+				if (xc == yc)
+				{
+					// hit to the corner, stop both
+					new_pos = old_pos;
+					p.speed = { 0.f,0.f };
+					if (p.speed.y < 0.f)
+					{
+						p.on_ground = true;
+					}
+				}
+				else if (yc)
+				{
+					new_pos.y = old_pos.y;
+					if (p.speed.y < 0.f)
+					{
+						p.on_ground = true;
+					}
+					p.speed.y = 0;
+				}
+				else // xc
+				{
+					new_pos.x = old_pos.x;
+					p.speed.x = 0.f;
+				}
+
+			}
 		}
-		p.position += p.speed * delta_time;
-		if (p.position.y <= 0.f)
-		{
-			p.position.y = 0.f;
-			p.on_ground = true;
-		}
+
+		p.position = new_pos;
 	}
 }
 

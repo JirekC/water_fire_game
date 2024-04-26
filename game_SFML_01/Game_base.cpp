@@ -26,6 +26,7 @@ void Game_base::init_window(int width_, int height_, std::string label_)
 	video_mode.height = height_;
 	window = new sf::RenderWindow(video_mode, label_, sf::Style::Titlebar | sf::Style::Close);
     window->setFramerateLimit(144);
+    clock.restart();
 }
 
 void Game_base::update()

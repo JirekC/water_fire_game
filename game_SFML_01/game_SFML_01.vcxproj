@@ -133,14 +133,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Boundary.cpp" />
     <ClCompile Include="Game_base.cpp" />
     <ClCompile Include="game_SFML_01.cpp" />
+    <ClCompile Include="Level_map.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Vanessa_game.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boundary.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="Game_base.h" />
+    <ClInclude Include="Level_map.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Vanessa_game.h" />
   </ItemGroup>

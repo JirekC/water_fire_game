@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "Game_base.h"
 #include "Player.h"
+#include "Level_map.h"
 
 class Vanessa_game : public Game_base
 {
@@ -34,7 +35,10 @@ public:
 protected:
 
 	// protected variables
+	sf::Vector2f viewport_pos;
 	std::vector<Player> players;
+	Level_map map;
+
 
 	// protected functions
 	void do_calcs() override;

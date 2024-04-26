@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include "Boundary.h"
 
 class Player
 {
@@ -26,7 +27,7 @@ public:
 	 * \param players		all players to be updated
 	 * \param delta_time	time elapsed from last update
 	 */
-	static void update(std::vector<Player>& players, float delta_time);
+	static void update(std::vector<Player>& players, const std::vector<Bound_box>& map_bounds, float delta_time);
 
 	/**
 	 * Draws all elements in vector.
@@ -55,6 +56,11 @@ public:
 	 * \param right		true = move to the right, false = move to the left
 	 */
 	void horizontal_move(bool move, bool right = true);
+
+	/**
+	 * \return			position in meters relative to map's bottom left corner.
+	 */
+	inline sf::Vector2f get_position() const { return position; }
 
 private:
 
