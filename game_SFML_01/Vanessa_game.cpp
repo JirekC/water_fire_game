@@ -7,12 +7,15 @@
 
 void Vanessa_game::init()
 {
+	// first map
+	map.init("data/map01.bnd");
+
 	// init players
 	players.clear();
-	players.push_back(std::move(Player()));
-	players.push_back(std::move(Player()));
-	players[0].init(sf::Vector2f(1.5f, 0.f), "data/water.png");
-	players[1].init(sf::Vector2f(1.0f, 0.f), "data/fire.png");
+	players.emplace_back();
+	players.emplace_back();
+	players[0].init(map.get_start(false), "data/water.png", Player::Color::blue);
+	players[1].init(map.get_start(true), "data/fire.png", Player::Color::red);
 
 	// keyboard - hardcoded for now
 	key_shortcuts = { sf::Keyboard::Up, sf::Keyboard::Down, sf::Keyboard::Left, sf::Keyboard::Right,
@@ -23,9 +26,6 @@ void Vanessa_game::init()
 	}
 	add_event_handler(sf::Event::KeyPressed, static_cast<Game_base::event_handler_t>(&Vanessa_game::key_press_handler));
 	add_event_handler(sf::Event::KeyReleased, static_cast<Game_base::event_handler_t>(&Vanessa_game::key_release_handler));
-
-	// first map
-	map.init("data/map01.png");
 }
 
 /***********************/
@@ -36,10 +36,24 @@ void Vanessa_game::do_calcs()
 {
 	// keyboard actions ->
 	// player 0
+	bool want_jump = false;
 	if (key_states[Key_function::p0_up] == pressed)
 	{
 		key_states[Key_function::p0_up] = comfirmed;
-		players[0].jump();
+		want_jump = true;
+	}
+
+	if (key_states[Key_function::p0_up] == comfirmed)
+	{
+		players[0].vertical_move(true, true, want_jump);
+	}
+	else if (key_states[Key_function::p0_down] == pressed)
+	{
+		players[0].vertical_move(true, false);
+	}
+	else
+	{
+		players[0].vertical_move(false);
 	}
 	
 	if (key_states[Key_function::p0_right] == pressed &&
@@ -58,10 +72,24 @@ void Vanessa_game::do_calcs()
 	}
 
 	// player 1
+	want_jump = false;
 	if (key_states[Key_function::p1_up] == pressed)
 	{
 		key_states[Key_function::p1_up] = comfirmed;
-		players[1].jump();
+		want_jump = true;
+	}
+
+	if (key_states[Key_function::p1_up] == comfirmed)
+	{
+		players[1].vertical_move(true, true, want_jump);
+	}
+	else if (key_states[Key_function::p1_down] == pressed)
+	{
+		players[1].vertical_move(true, false);
+	}
+	else
+	{
+		players[1].vertical_move(false);
 	}
 
 	if (key_states[Key_function::p1_right] == pressed &&
@@ -88,7 +116,15 @@ void Vanessa_game::do_calcs()
 
 	// update viewport position
 	auto win_size_m = sf::Vector2f(window->getSize()) / pixels_per_meter; // window size in meters
-	viewport_pos = (players[0].get_position() + players[1].get_position()) * 0.5f;
+	int p_count = 0;
+	viewport_pos = { 0.f,0.f };
+	for (auto& p : players)
+	{
+		if (!p.get_alive()) continue;
+		viewport_pos += p.get_position();
+		p_count++;
+	}
+	viewport_pos /= static_cast<float>(p_count);
 	viewport_pos -= win_size_m * 0.5f;
 	if (viewport_pos.x < 0.f) viewport_pos.x = 0.f;
 	if (viewport_pos.y < 0.f) viewport_pos.y = 0.f;
@@ -99,7 +135,7 @@ void Vanessa_game::do_calcs()
 
 void Vanessa_game::draw_game()
 {
-	map.draw(*window, viewport_pos);
+	map.draw(*window, viewport_pos, true);
 	Player::draw(players, *window, viewport_pos);
 }
 
@@ -113,7 +149,7 @@ void Vanessa_game::key_press_handler(sf::Event& ev_)
 	{
 		if (ev_.key.code == key_shortcuts[i])
 		{
-			if (key_states[i] == released)
+			if (key_states[i] == Key_state::released)
 			{
 				key_states[i] = Key_state::pressed;
 			}

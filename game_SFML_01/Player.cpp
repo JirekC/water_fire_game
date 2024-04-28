@@ -4,12 +4,12 @@
 #include "constants.h"
 
 Player::Player() :
-	on_ground(false), mass(1.0f), size(0.0, 0.0),
+	color(Color::red), alive(true), on_ground(false), mass(1.0f), size(0.0, 0.0),
 	position(0.0, 0.0), speed(0.0, 0.0), accel(0.0, 0.0)//, jerk(0.0, 0.0)
 {
 }
 
-void Player::init(sf::Vector2f position, std::string texture_file)
+void Player::init(sf::Vector2f position, std::string texture_file, Color color)
 {
 	texture.loadFromFile(texture_file);
 	drawable_object.setTexture(&texture, true);
@@ -19,15 +19,27 @@ void Player::init(sf::Vector2f position, std::string texture_file)
 	size.y = (float)tex_size.y / pixels_per_meter;
 
 	this->position = position;
+	this->color = color;
 }
 
 void Player::update(std::vector<Player>& players, const std::vector<Bound_box>& map_bounds, float delta_time)
 {
 	for (auto& p : players)
 	{
+		if (!p.alive)
+		{
+			continue;
+		}
 		p.accel.y = gravity_acc;
 		p.accel.x = 0.0f; // for now we are setting horizontal speed directly by "<-", "->" arrow key_shortcuts
 		p.speed += p.accel * delta_time; // add gravity as offset to acceleration
+
+		// horizontal move - for simplicity directly set the speed, infinity acceleration :)
+		p.speed.x = p.move_flags[left] ? -hmove_speed : (p.move_flags[right] ? hmove_speed : 0.f);
+
+		// can & want jump ?
+		if (p.on_ground && p.move_flags[jump]) p.speed.y += jump_speed;
+		p.move_flags[jump] = false; // clean up
 
 		auto delta = p.speed * delta_time;
 		auto old_pos = p.position;
@@ -39,35 +51,51 @@ void Player::update(std::vector<Player>& players, const std::vector<Bound_box>& 
 		{
 			if (b.inside(new_pos))
 			{
-				// collision, check in which coordinate
-				bool xc = b.inside({ new_pos.x, old_pos.y });
-				bool yc = b.inside({ old_pos.x, new_pos.y });
-				// decide what to do
-				if (xc == yc)
+				if ( b.type == Bound_box::Bound_type::bl_green ||
+					(b.type == Bound_box::Bound_type::bl_red && p.color == Color::blue) ||
+					(b.type == Bound_box::Bound_type::bl_blue && p.color == Color::red))
 				{
-					// hit to the corner, stop both
-					new_pos = old_pos;
-					p.speed = { 0.f,0.f };
-					if (p.speed.y < 0.f)
+					std::cout << "Player " << p.color << " died\n";
+					p.alive = false;
+					break; // for
+				}
+				else if (b.type == Bound_box::Bound_type::bl_rib)
+				{
+					p.speed.y = p.move_flags[up] ? vmove_speed : (p.move_flags[down] ? -vmove_speed : 0.f);
+					new_pos = p.position + (p.speed * delta_time);
+					break; // for
+				}
+				else
+				{
+					// collision, check in which coordinate
+					bool xc = b.inside({ new_pos.x, old_pos.y });
+					bool yc = b.inside({ old_pos.x, new_pos.y });
+					// decide what to do
+					if (xc == yc)
 					{
-						p.on_ground = true;
+						// hit to the corner, stop both
+						new_pos = old_pos;
+						p.speed = { 0.f,0.f };
+						if (p.speed.y < 0.f)
+						{
+							p.on_ground = true;
+						}
+					}
+					else if (yc)
+					{
+						new_pos.y = old_pos.y;
+						if (p.speed.y < 0.f)
+						{
+							p.on_ground = true;
+						}
+						p.speed.y = 0;
+					}
+					else // xc
+					{
+						new_pos.x = old_pos.x;
+						p.speed.x = 0.f;
 					}
 				}
-				else if (yc)
-				{
-					new_pos.y = old_pos.y;
-					if (p.speed.y < 0.f)
-					{
-						p.on_ground = true;
-					}
-					p.speed.y = 0;
-				}
-				else // xc
-				{
-					new_pos.x = old_pos.x;
-					p.speed.x = 0.f;
-				}
-
 			}
 		}
 
@@ -90,25 +118,14 @@ void Player::draw(std::vector<Player>& players, sf::RenderWindow& window, sf::Ve
 	}
 }
 
-void Player::jump()
-{
-	if (on_ground)
-	{ 
-		speed.y += jump_speed;
-		on_ground = false;
-	}
-}
-
-void Player::horizontal_move(bool move, bool right)
-{
-	if (move)
-	{
-		speed.x = right ? hmove_speed : -hmove_speed;
-	}
-	else
-	{
-		speed.x = 0.0f;
-	}
-}
 
 
+//
+//void Player::jump()
+//{
+//	if (on_ground)
+//	{
+//		speed.y += jump_speed;
+//		on_ground = false;
+//	}
+//}

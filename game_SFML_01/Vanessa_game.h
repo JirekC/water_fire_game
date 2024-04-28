@@ -14,9 +14,9 @@ public:
 
 	enum Key_state
 	{
-		released,
-		pressed,
-		comfirmed
+		released,	///< key is not pressed
+		pressed,	///< key just was pressed
+		comfirmed	///< key is still pressed but this state was read & used
 	};
 
 	enum Key_function
