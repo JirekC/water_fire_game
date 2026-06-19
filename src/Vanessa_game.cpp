@@ -14,8 +14,8 @@ void Vanessa_game::init()
 	players.clear();
 	players.emplace_back();
 	players.emplace_back();
-	players[0].init(map.get_start(false), "assets/water.png", Player::Color::blue);
-	players[1].init(map.get_start(true), "assets/fire.png", Player::Color::red);
+	players[0].init(map.get_start(false), "assets/water.png", Color::blue);
+	players[1].init(map.get_start(true), "assets/fire.png", Color::red);
 
 	// keyboard - hardcoded for now
 	key_shortcuts = { sf::Keyboard::Key::Up, sf::Keyboard::Key::Down, sf::Keyboard::Key::Left, sf::Keyboard::Key::Right,
@@ -124,7 +124,10 @@ void Vanessa_game::do_calcs()
 		viewport_pos += p.get_position();
 		p_count++;
 	}
-	viewport_pos /= static_cast<float>(p_count);
+	if (p_count > 0)
+	{
+		viewport_pos /= static_cast<float>(p_count);
+	}
 	viewport_pos -= win_size_m * 0.5f;
 	if (viewport_pos.x < 0.f) viewport_pos.x = 0.f;
 	if (viewport_pos.y < 0.f) viewport_pos.y = 0.f;
@@ -135,7 +138,7 @@ void Vanessa_game::do_calcs()
 
 void Vanessa_game::draw_game()
 {
-	map.draw(*window, viewport_pos, true);
+	map.draw(*window, viewport_pos, c_debug_draw);
 	Player::draw(players, *window, viewport_pos);
 }
 

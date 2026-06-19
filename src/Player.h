@@ -4,13 +4,12 @@
 #include <vector>
 #include <bitset>
 #include <SFML/Graphics.hpp>
-#include "Boundary.h"
+#include "Defs.h"
+#include "Boundaries.h"
 
 class Player
 {
 public:
-
-	enum Color {blue, red};
 
 	Player();
 
@@ -19,6 +18,7 @@ public:
 	 * 
 	 * \param position		position on map in metters
 	 * \param texture_file	path to texture image file
+	 * \param color			player's color - Color::red or Color::blue
 	 */
 	void init(sf::Vector2f position, std::string texture_file, Color color);
 
@@ -30,7 +30,7 @@ public:
 	 * \param players		all players to be updated
 	 * \param delta_time	time elapsed from last update
 	 */
-	static void update(std::vector<Player>& players, const std::vector<Bound_box>& map_bounds, float delta_time);
+	static void update(std::vector<Player>& players, const Boundaries& map_bounds, float delta_time);
 
 	/**
 	 * Draws all elements in vector.
@@ -87,10 +87,16 @@ public:
 	 */
 	inline bool get_alive() const { return alive; }
 
+	/**
+	 * \return			true if player reached the door of his color and won the game.
+	 */
+	inline bool get_win() const { return win; }
+
 private:
 
 	Color color;
 	bool alive;				// by default its true, set to false if player die
+	bool win;				// true if player reached the door of his color
 	bool on_ground;			// true if standing on groud (not on rib) -> used for jumping
 	float mass;				// in kilograms
 	sf::Vector2f size;		// size in meters

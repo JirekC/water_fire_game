@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include "constants.h"
+#include "Defs.h"
 #include "Game_base.h"
 #include "Player.h"
 #include "Level_map.h"

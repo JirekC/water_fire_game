@@ -1,5 +1,7 @@
 #pragma once
 
+// draw debuging rectangles for boundaries
+const bool c_debug_draw = true;
 
 // kinematics
 const float c_gravity_acc = 9.8f;       // N * kg^-1 (m * s^-2)
