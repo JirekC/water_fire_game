@@ -39,12 +39,10 @@ public:
 
 private:
 
-	// std::vector<Wall> boundaries;	// vector of boundary-lines to be checked by collision-checker
-	Boundaries bounds;
-
-	sf::Vector2f size;					// size in meters
-	sf::Vector2f start[2];				// starting position of blue and red players
-	sf::Texture texture;
+	Boundaries bounds;					///< map boundaries e.g. walls, doors, ribs
+	sf::Vector2f size;					///< size in meters
+	sf::Vector2f start[2];				///< starting position of blue and red players
+	sf::Texture texture;				///< background texture of map
 	sf::RectangleShape background_img;
 
 	/**

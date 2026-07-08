@@ -2,6 +2,7 @@
 #define VANESSA_GAME_H_
 
 #include <array>
+#include <memory>
 #include <vector>
 #include "constants.h"
 #include "Defs.h"
@@ -38,12 +39,16 @@ protected:
 	// protected variables
 	sf::Vector2f viewport_pos;
 	std::vector<Player> players;
-	Level_map map;
+	std::unique_ptr<Level_map> map;
+	int current_map;
 
 
 	// protected functions
 	void do_calcs() override;
 	void draw_game() override;
+
+	// loads map by number, reinits players
+	void load_map(int num);
 
 	// event handlers
 	void key_press_handler(sf::Event& ev_);

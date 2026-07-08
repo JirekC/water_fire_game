@@ -12,3 +12,6 @@ const float c_jump_speed = 6.0f;		// m * s^-1
 // size constants
 const float c_pixels_per_meter = 80.0f;
 
+// maps
+const int c_map_count = 3;
+

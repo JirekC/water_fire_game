@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include "Vanessa_game.h"
 
@@ -6,16 +7,10 @@
 /********************/
 
 void Vanessa_game::init()
-{
+{ 
 	// first map
-	map.init("assets/map01.bnd");
-
-	// init players
-	players.clear();
-	players.emplace_back();
-	players.emplace_back();
-	players[0].init(map.get_start(false), "assets/water.png", Color::blue);
-	players[1].init(map.get_start(true), "assets/fire.png", Color::red);
+	current_map = 1;
+	load_map(current_map);
 
 	// keyboard - hardcoded for now
 	key_shortcuts = { sf::Keyboard::Key::Up, sf::Keyboard::Key::Down, sf::Keyboard::Key::Left, sf::Keyboard::Key::Right,
@@ -109,10 +104,21 @@ void Vanessa_game::do_calcs()
 	// <- keyboard actions
 
 	// collision check
-	// ........ by game_map class ?
+	// ........ by Player class
 
 	// kinematics
-	Player::update(players, map.get_boundaries(), get_frame_time());
+	Player::update(players, map->get_boundaries(), get_frame_time());
+
+	// win / lose check
+	bool all_dead = std::all_of(players.begin(), players.end(),
+		[](const Player& p){ return !p.get_alive(); });
+	bool all_win = std::all_of(players.begin(), players.end(),
+		[](const Player& p){ return p.get_win(); });
+
+	if (all_win)
+		load_map(current_map % c_map_count + 1); // next map, wraps to 1 after last
+	else if (all_dead)
+		load_map(current_map); // restart current map
 
 	// update viewport position
 	auto win_size_m = sf::Vector2f(window->getSize()) / c_pixels_per_meter; // window size in meters
@@ -131,14 +137,25 @@ void Vanessa_game::do_calcs()
 	viewport_pos -= win_size_m * 0.5f;
 	if (viewport_pos.x < 0.f) viewport_pos.x = 0.f;
 	if (viewport_pos.y < 0.f) viewport_pos.y = 0.f;
-	if (viewport_pos.x > (map.get_size().x - win_size_m.x)) viewport_pos.x = map.get_size().x - win_size_m.x;
-	if (viewport_pos.y > (map.get_size().y - win_size_m.y)) viewport_pos.y = map.get_size().y - win_size_m.y;
+	if (viewport_pos.x > (map->get_size().x - win_size_m.x)) viewport_pos.x = map->get_size().x - win_size_m.x;
+	if (viewport_pos.y > (map->get_size().y - win_size_m.y)) viewport_pos.y = map->get_size().y - win_size_m.y;
 
+}
+
+void Vanessa_game::load_map(int num)
+{
+	std::string path = std::string("assets/map") + (num < 10 ? "0" : "") + std::to_string(num) + ".bnd";
+	current_map = num;
+	map = std::make_unique<Level_map>();
+	map->init(path);
+	players.clear();
+	players.emplace_back().init(map->get_start(false), "assets/water.png", Color::blue);
+	players.emplace_back().init(map->get_start(true),  "assets/fire.png",  Color::red);
 }
 
 void Vanessa_game::draw_game()
 {
-	map.draw(*window, viewport_pos, c_debug_draw);
+	map->draw(*window, viewport_pos, c_debug_draw);
 	Player::draw(players, *window, viewport_pos);
 }
 

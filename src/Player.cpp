@@ -141,6 +141,7 @@ void Player::draw(std::vector<Player>& players, sf::RenderWindow& window, sf::Ve
 		pos_on_screen.x -= p.size.x * 0.5f; // center ->
 		pos_on_screen.y += p.size.y; // <- bottom corner
 		pos_on_screen.y = win_size_m.y - pos_on_screen.y; // flip Y coordinate
+		p.drawable_object.setTexture(&p.texture); // re-bind in case vector reallocated
 		p.drawable_object.setPosition(pos_on_screen * c_pixels_per_meter); // recalc to pixels & update drawable_object
 		window.draw(p.drawable_object); // draw it
 	}
